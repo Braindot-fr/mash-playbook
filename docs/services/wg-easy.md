@@ -26,27 +26,13 @@ To enable this service, add the following configuration to your `vars.yml` file 
 
 wg_easy_enabled: true
 
-wg_easy_hostname: mash.example.com
+wg_easy_hostname: wg-easy.example.com
 
-wg_easy_path_prefix: /wg-easy
-
-wg_easy_environment_variables_additional_variable_wg_host: mash.example.com
-
-# Put a strong password below, generated with `pwgen -s 64 1` or in another way
-wg_easy_environment_variables_additional_variable_password: ''
-
-# The default WireGuard port is 51820.
-# Uncomment and change the lines below to use another one.
-#
-# The port that wg-easy advertises for WireGuard connectivity in profile files.
-# wg_easy_environment_variables_additional_variable_wg_port: 51820
-#
-# The port that is actually published from the container.
+# The default WireGuard port is always 51820 in the container,
+# but the advertised port can be configured via the web UI during the initial setup.
+# If you'll be using a port other than 51820, uncomment and change the line below
+# to make the container publish the port that you've chosen.
 # wg_easy_container_wireguard_bind_port: 51820
-
-# The default DNS is 1.1.1.1.
-# Uncomment and change the line below to use another one.
-# wg_easy_environment_variables_additional_variable_wg_default_dns: 1.1.1.1
 
 ########################################################################
 #                                                                      #
@@ -57,38 +43,63 @@ wg_easy_environment_variables_additional_variable_password: ''
 
 ### URL
 
-In the example configuration above, we configure the service to be hosted at `https://mash.example.com/wg-easy`.
+In the example configuration above, we configure the service to be hosted at `https://wg-easy.example.com/`.
 
-You can remove the `wg_easy_path_prefix` variable definition, to make it default to `/`, so that the service is served at `https://mash.example.com/`.
+Previously, a `wg_easy_path_prefix` variable was supported for hosting wg-easy at a sub-path, but [this is no longer the case since wg-easy v15](https://github.com/wg-easy/wg-easy/issues/1704#issuecomment-2704400679).
 
 
 ### Networking
 
 **In addition** to ports `80` and `443` exposed by the [Traefik](traefik.md) reverse-proxy, the following ports will be exposed by the WireGuard containers on **all network interfaces**:
 
-- `51820` over **UDP**, controlled by `wg_easy_environment_variables_additional_variable_wg_port` and `wg_easy_container_wireguard_bind_port` - used for [Wireguard](https://www.wireguard.com/) connections
+- `51820` over **UDP**, controlled by `wg_easy_container_wireguard_bind_port` - used for [Wireguard](https://www.wireguard.com/) connections
 
 Docker automatically opens these ports in the server's firewall, so you **likely don't need to do anything**. If you use another firewall in front of the server, you may need to adjust it.
 
 ### Additional configuration
 
-For additional configuration options, see the upstream documentation's [Options](https://github.com/WeeJeWel/wg-easy#options) section.
+The new wg-easy version (after the v15 release) does not support most of the environment variables that were supported in previous versions.
+Most of the configuration happens via the web UI after installation. See [Adjusting the post-installation configuration](#adjusting-the-post-installation-configuration) for more details.
 
-You can inject additional environment variables with this additional configuration:
+Nevertheless, if you need to inject additional environment variables, you can do so with this additional configuration:
 
 ```yaml
 wg_easy_environment_variables_additional_variables: |
-  WG_DEFAULT_ADDRESS: 10.6.0.x
-  WG_MTU: 1420
+  INSECURE=true
 ```
+
+💡 Injecting this `INSECURE` environment variable like this is pointless, since the Ansible role provides a dedicated variable for controlling it (`wg_easy_environment_variables_additional_variable_insecure`).
+
 
 ## Usage
 
-After installation, you can go to the WireGuard Easy URL, as defined in `wg_easy_hostname` and `wg_easy_path_prefix`.
+After installation, you can go to the wg-easy URL, as defined in `wg_easy_hostname` and `wg_easy_path_prefix`.
 
-You can authenticate with the password set in `wg_easy_environment_variables_additional_variable_password`.
+It will ask you to sign up with a username and a password and configure your VPN hostname and WireGuard port advertised to clients.
+The WireGuard port in the container is always 51820/udp and the exposed port is controlled by `wg_easy_container_wireguard_bind_port` (defaulting to `51820` as well).
 
 You can then create various Clients and import the configuration for them onto your devices - either by downloading a file or by scanning a QR code.
+
+
+### Adjusting the post-installation configuration
+
+#### Adjusting the default DNS
+
+Previously, wg-easy supported a `WG_DEFAULT_DNS` environment variable, which allowed one to configure the default DNS server for clients.
+
+Now, the default DNS is hardcoded to `1.1.1.1` & `2606:4700:4700::1111` and [cannot be changed via the web UI yet](https://github.com/wg-easy/wg-easy/issues/1704#issuecomment-2704291491).
+
+You can adjust this by using sqlite on the server (`sqlite3 /mash/wg-easy/data/wg-easy.db`) and running the following queries:
+
+```sql
+--- Update the default DNS server for new clients belonging to any of the users.
+--- To limit this to a specific user, specify a WHERE clause like `WHERE id = 'wg0'`.
+UPDATE user_configs_table SET default_dns = '["192.168.1.5","2001:db8:1234:5678::5"]';
+
+--- Update the default DNS server for existing clients belonging to any of the users.
+--- To limit this to a specific user, specify a WHERE clause via the `id` or `user_id` columns.
+UPDATE clients_table SET dns = '["192.168.1.5","2001:db8:1234:5678::5"]';
+```
 
 
 ## Recommended other services
