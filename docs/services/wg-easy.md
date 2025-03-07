@@ -26,7 +26,9 @@ To enable this service, add the following configuration to your `vars.yml` file 
 
 wg_easy_enabled: true
 
-wg_easy_hostname: wg-easy.example.com
+wg_easy_hostname: mash.example.com
+
+wg_easy_path_prefix: /wg-easy
 
 # The default WireGuard port is always 51820 in the container,
 # but the advertised port can be configured via the web UI during the initial setup.
@@ -43,9 +45,9 @@ wg_easy_hostname: wg-easy.example.com
 
 ### URL
 
-In the example configuration above, we configure the service to be hosted at `https://wg-easy.example.com/`.
+In the example configuration above, we configure the service to be hosted at `https://mash.example.com/wg-easy`.
 
-Previously, a `wg_easy_path_prefix` variable was supported for hosting wg-easy at a sub-path, but [this is no longer the case since wg-easy v15](https://github.com/wg-easy/wg-easy/issues/1704#issuecomment-2704400679).
+You can remove the `wg_easy_path_prefix` variable definition, to make it default to `/`, so that the service is served at `https://mash.example.com/`.
 
 
 ### Networking
