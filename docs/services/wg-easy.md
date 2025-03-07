@@ -80,29 +80,17 @@ After installation, you can go to the wg-easy URL, as defined in `wg_easy_hostna
 It will ask you to sign up with a username and a password and configure your VPN hostname and WireGuard port advertised to clients.
 The WireGuard port in the container is always 51820/udp and the exposed port is controlled by `wg_easy_container_wireguard_bind_port` (defaulting to `51820` as well).
 
+### Adjusting the default DNS
+
+Before [creating WireGuard clients](#creating-wireguard-clients) and downloading their configuration profiles, you may wish to go to the Admin Panel -> Config section (`/admin/config` URL path) and adjust the default DNS settings.
+
+wg-easy defaults the global DNS configuration to `1.1.1.1` & `2606:4700:4700::1111`, but you may wish to use your own.
+
+DNS configuration can also be adjusted later on, on a per-client basis, but these changes need to be made before one downloads the WireGuard configuration profile files, because they do hardcode the DNS configuration (and all lots of other configuration) inside them.
+
+### Creating WireGuard clients
+
 You can then create various Clients and import the configuration for them onto your devices - either by downloading a file or by scanning a QR code.
-
-
-### Adjusting the post-installation configuration
-
-#### Adjusting the default DNS
-
-Previously, wg-easy supported a `WG_DEFAULT_DNS` environment variable, which allowed one to configure the default DNS server for clients.
-
-Now, the default DNS is hardcoded to `1.1.1.1` & `2606:4700:4700::1111` and [cannot be changed via the web UI yet](https://github.com/wg-easy/wg-easy/issues/1704#issuecomment-2704291491).
-
-You can adjust this by using sqlite on the server (`sqlite3 /mash/wg-easy/data/wg-easy.db`) and running the following queries:
-
-```sql
---- Update the default DNS server for new clients belonging to any of the users.
---- To limit this to a specific user, specify a WHERE clause like `WHERE id = 'wg0'`.
-UPDATE user_configs_table SET default_dns = '["192.168.1.5","2001:db8:1234:5678::5"]';
-
---- Update the default DNS server for existing clients belonging to any of the users.
---- To limit this to a specific user, specify a WHERE clause via the `id` or `user_id` columns.
-UPDATE clients_table SET dns = '["192.168.1.5","2001:db8:1234:5678::5"]';
-```
-
 
 ## Recommended other services
 
