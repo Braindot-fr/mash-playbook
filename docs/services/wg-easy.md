@@ -57,6 +57,56 @@ Previously (prior to wg-easy v15), a `wg_easy_path_prefix` variable could allow 
 
 Docker automatically opens these ports in the server's firewall, so you **likely don't need to do anything**. If you use another firewall in front of the server, you may need to adjust it.
 
+### Adjusting the host's iptables configuration
+
+If you're running `iptables`/`ip6tables` on the host with a custom config (which whitelists some traffic and denies everything else), you may find that WireGuard clients cannot reach certain ports on server where wg-easy runs via its LAN IP address (e.g. `192.168.1.50`).
+
+You may wish to adjust your iptables configuration (typically `/etc/iptables/iptables.rules`) like this:
+
+```iptables
+# ... Additional configuration ...
+
+# Allow all private IPv4 ranges (RFC1918 private addresses) to access us via SSH.
+#
+# This allows wg-easy WireGuard clients which try to speak to us via our LAN IP to be able to reach us.
+# They "exit" through mash-wg-easy's container subnet (e.g. 172.18.0.1).
+-A INPUT -m tcp -p tcp --dport 22 -s 10.0.0.0/8 -j ACCEPT
+-A INPUT -m tcp -p tcp --dport 22 -s 172.16.0.0/12 -j ACCEPT
+-A INPUT -m tcp -p tcp --dport 22 -s 192.168.0.0/16 -j ACCEPT
+
+# Allow private IPv4 ranges to access us via HTTP.
+# This is like the above private IPv4 range rules for SSH.
+-A INPUT -m tcp -p tcp --dport 80 -s 10.0.0.0/8 -j ACCEPT
+-A INPUT -m tcp -p tcp --dport 80 -s 172.16.0.0/12 -j ACCEPT
+-A INPUT -m tcp -p tcp --dport 80 -s 192.168.0.0/16 -j ACCEPT
+
+# ... Additional configuration ...
+```
+
+or for ip6tables (typically `/etc/iptables/ip6tables.rules`) like this:
+
+```iptables
+# ... Additional configuration ...
+
+# Allow all private IPv6 ranges to access us via SSH.
+#
+# This allows wg-easy WireGuard clients which try to speak to us via our LAN IP to be able to reach us.
+# They "exit" through mash-wg-easy's container subnet (e.g. 172.18.0.1).
+# Unique Local Addresses (ULA)
+-A INPUT -p tcp --dport 22 -s fc00::/7 -j ACCEPT
+# Link-local addresses
+-A INPUT -p tcp --dport 22 -s fe80::/10 -j ACCEPT
+
+# Allow private IPv6 ranges to access us via HTTP.
+# This is like the above private IPv6 range rules for SSH.
+-A INPUT -m tcp -p tcp --dport 80 -s fc00::/7 -j ACCEPT
+-A INPUT -m tcp -p tcp --dport 80 -s fe80::/10 -j ACCEPT
+
+# ... Additional configuration ...
+```
+
+After doing so, you'll wish to restart `iptables`/`ip6tables`. Restarting iptables typically necessitates restarting Docker (`docker.service`) as well.
+
 ### Additional configuration
 
 The new wg-easy version (after the v15 release) does not support most of the environment variables that were supported in previous versions.
