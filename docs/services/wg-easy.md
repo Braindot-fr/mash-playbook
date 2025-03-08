@@ -46,7 +46,7 @@ wg_easy_hostname: wg-easy.example.com
 
 In the example configuration above, we configure the service to be hosted at `https://wg-easy.example.com/`.
 
-Previously (prior to wg-easy v15), a `wg_easy_path_prefix` variable could allow you to host wg-easy at a subpath (e.g. `wg_easy_path_prefix: /wg-easy`), to this is [no longer possible](https://github.com/wg-easy/wg-easy/issues/1704#issuecomment-2705873936) and such a feature [may re-appear later](https://github.com/wg-easy/wg-easy/issues/1704#issuecomment-2706575504).
+Previously (prior to wg-easy v15), a `wg_easy_path_prefix` variable could allow you to host wg-easy at a subpath (e.g. `wg_easy_path_prefix: /wg-easy`), but this is [no longer possible](https://github.com/wg-easy/wg-easy/issues/1704#issuecomment-2705873936) and such a feature [may re-appear later](https://github.com/wg-easy/wg-easy/issues/1704#issuecomment-2706575504).
 
 
 ### Networking
