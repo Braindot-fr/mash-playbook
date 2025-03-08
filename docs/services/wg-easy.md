@@ -122,6 +122,8 @@ To get full IPv6 connectivity and have it be preferred on most operating systems
 
 To do the latter, **you need to change the IPv6 CIDR used by wg-easy** to a GUA or GUA-like one. The proposed workaround [here](https://www.reddit.com/r/ipv6/comments/ngug1e/comment/gyw1ni8/) suggests using a random real/global/public IPv6 subnet for your WireGuard clients. While these addresses will only be used inside your WireGuard for NAT purposes, using them will still break your connectivity to this subnet.
 
+💡 Changing the wg-easy IPv6 CIDR can be done from the Admin Panel -> Interface -> Change CIDR.
+
 We propose 2 alternatives for your IPv6 CIDR:
 
 - (recommended) a CIDR derived from a GUA one that you own. For example, if you get `2001:555:5555:5555:/64` from your ISP for your network, you could assign something like `2001:555:5555:5555::cafe:0/112` for your 1st (`0`-th) wg-easy instance. If you run more wg-easy instances in your network, you could use `2001:555:5555:5555::cafe:1/112`, `2001:555:5555:5555::cafe:2/112`, etc. for them, so that they all have unique subnets.
