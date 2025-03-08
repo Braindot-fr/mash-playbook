@@ -176,12 +176,14 @@ To do the latter, **you need to change the IPv6 CIDR used by wg-easy** to a GUA 
 
 We propose 2 alternatives for your IPv6 CIDR:
 
-- (recommended) a CIDR derived from a GUA one that you own. For example, if you get `2001:555:5555:5555:/64` from your ISP for your network, you could assign something like `2001:555:5555:5555::cafe:0/112` for your 1st (`0`-th) wg-easy instance. If you run more wg-easy instances in your network, you could use `2001:555:5555:5555::cafe:1/112`, `2001:555:5555:5555::cafe:2/112`, etc. for them, so that they all have unique subnets.
+- (recommended) a CIDR derived from a GUA one that you own. For example, if you get `2001:555:5555:5555:/64` from your ISP for your network, you could assign something like `2001:555:5555:5555::0:cafe:0/112` for your 1st (`0`-th) wg-easy instance. If you run more wg-easy instances in your network, you could use `2001:555:5555:5555::1:cafe:0/112`, `2001:555:5555:5555::2:cafe:0/112`, etc. for them, so that they all have unique subnets.
 
-- (not so recommended) [a GUA-like CIDR](https://en.wikipedia.org/wiki/IPv6_address#Special-purpose_addresses). We've had success using the documentation-reserved CIDR (`2001:db8::/32`) as per [RFC 3849](https://datatracker.ietf.org/doc/html/rfc3849). You can pick a random CIDR value from this range, like `2001:db8:100:5000::cafe:0/112` and use it for your 1st (`0`-th) wg-easy instance. If you run more wg-easy instances in your network, you could use `2001:db8:100:5000::cafe:1/112`, `2001:db8:100:5000::cafe:2/112`, etc. for them, so that they all have unique subnets. Using documentation-reserved addresses for non-documentation-purposes is not great, but we've confirmed that it works well in practice. These addresses are only behind your NAT and never used for real addressing outside of it, so there shouldn't be a problem.
+- (not so recommended) [a GUA-like CIDR](https://en.wikipedia.org/wiki/IPv6_address#Special-purpose_addresses). We've had success using the documentation-reserved CIDR (`2001:db8::/32`) as per [RFC 3849](https://datatracker.ietf.org/doc/html/rfc3849). You can pick a random CIDR value from this range, like `2001:db8:100:5000::0:cafe:0/112` and use it for your 1st (`0`-th) wg-easy instance. If you run more wg-easy instances in your network, you could use `2001:db8:100:5000::1:cafe:0/112`, `2001:db8:100:5000::2:cafe:0/112`, etc. for them, so that they all have unique subnets. Using documentation-reserved addresses for non-documentation-purposes is not great, but we've confirmed that it works well in practice. These addresses are only behind your NAT and never used for real addressing outside of it, so there shouldn't be a problem.
 
 Regardless of what you choose, your WireGuard clients will get a network interface which uses a GUA or GUA-like IPv6 address instead of a ULA IPv6 address. With that, IPv6 connectivity will be preferred over IPv4 even without custom changes to `/etc/gai.conf`.
 
+> [!WARNING]
+> After changing the CIDR in wg-easy's settings, you must restart the wg-easy service for the changes to take effect.
 
 ### Creating WireGuard clients
 
