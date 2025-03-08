@@ -26,9 +26,7 @@ To enable this service, add the following configuration to your `vars.yml` file 
 
 wg_easy_enabled: true
 
-wg_easy_hostname: mash.example.com
-
-wg_easy_path_prefix: /wg-easy
+wg_easy_hostname: wg-easy.example.com
 
 # The default WireGuard port is always 51820 in the container,
 # but the advertised port can be configured via the web UI during the initial setup.
@@ -45,9 +43,9 @@ wg_easy_path_prefix: /wg-easy
 
 ### URL
 
-In the example configuration above, we configure the service to be hosted at `https://mash.example.com/wg-easy`.
+In the example configuration above, we configure the service to be hosted at `https://wg-easy.example.com/`.
 
-You can remove the `wg_easy_path_prefix` variable definition, to make it default to `/`, so that the service is served at `https://mash.example.com/`.
+Previously (prior to wg-easy v15), a `wg_easy_path_prefix` variable could allow you to host wg-easy at a subpath (e.g. `wg_easy_path_prefix: /wg-easy`), to this is [no longer possible](https://github.com/wg-easy/wg-easy/issues/1704#issuecomment-2705873936) and such a feature [may re-appear later](https://github.com/wg-easy/wg-easy/issues/1704#issuecomment-2706575504).
 
 
 ### Networking
@@ -75,7 +73,7 @@ wg_easy_environment_variables_additional_variables: |
 
 ## Usage
 
-After installation, you can go to the wg-easy URL, as defined in `wg_easy_hostname` and `wg_easy_path_prefix`.
+After installation, you can go to the wg-easy [URL](#url).
 
 It will ask you to sign up with a username and a password and configure your VPN hostname and WireGuard port advertised to clients.
 The WireGuard port in the container is always 51820/udp and the exposed port is controlled by `wg_easy_container_wireguard_bind_port` (defaulting to `51820` as well).
