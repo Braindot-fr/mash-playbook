@@ -47,7 +47,7 @@ wg_easy_environment_variables_additional_variable_init_password: ''
 ```
 
 > [!WARNING]
-> There are a few other **variables that you may wish to adjust before doing the initial setup**. See the sections below for details.
+> There are a few other **variables that you may wish to adjust before doing the initial [unattended setup](https://github.com/wg-easy/wg-easy/blob/c133446f9ced12942d8a6d5b06388301a46b55e7/docs/content/advanced/config/unattended-setup.md)**. See the sections below for details.
 > The reason it's important to do this early on, is because certain variables (`wg_easy_environment_variables_additional_variable_init_*`)
 > only take effect during the initial setup phase.
 
