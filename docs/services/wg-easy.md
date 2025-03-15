@@ -121,7 +121,7 @@ wg_easy_environment_variables_additional_variable_init_ipv6_cidr: "2001:db8::/32
 
 **In addition** to ports `80` and `443` exposed by the [Traefik](traefik.md) reverse-proxy, the following ports will be exposed by the WireGuard containers on **all network interfaces**:
 
-- `51820` over **UDP**, controlled by `wg_easy_container_wireguard_bind_port` - used for [Wireguard](https://www.wireguard.com/) connections
+- `51820` over **UDP**, controlled by `wg_easy_container_wireguard_bind_port` — used for [Wireguard](https://www.wireguard.com/) connections
 
 Docker automatically opens these ports in the server's firewall, so you **likely don't need to do anything**. If you use another firewall in front of the server, you may need to adjust it.
 
@@ -204,7 +204,7 @@ Similarly, if you have provided a hostname (`wg_easy_hostname` and/or `wg_easy_e
 
 ### Creating WireGuard clients
 
-You can then create various Clients and import the configuration for them onto your devices - either by downloading a file or by scanning a QR code.
+You can then create various Clients and import the configuration for them onto your devices — either by downloading a file or by scanning a QR code.
 
 
 ## Note about the IPv6 CIDR and IPv6 connectivity
@@ -256,4 +256,4 @@ To change the IPv6 CIDR, refer to the [Adjusting the IPv4/IPv6 CIDR](#adjusting-
 
 ## Recommended other services
 
-- [AdGuard Home](adguard-home.md) - A network-wide DNS software for blocking ads & tracking
+- [AdGuard Home](adguard-home.md) — A network-wide DNS software for blocking ads & tracking
