@@ -77,16 +77,16 @@ Sometimes, you may wish to use a different hostname or port for the WireGuard en
 wg_easy_environment_variables_additional_variable_init_host: wg-easy.example.com
 
 # Controls the public port of the WireGuard endpoint that will be configured during initial unattended setup.
+# Also points to the port actually used in the container (in case you've reconfigured it via the web UI).
 wg_easy_environment_variables_additional_variable_init_port: 51820
 
 # Controls the exposed (published) port of the WireGuard container.
+# By default, this matches the `wg_easy_environment_variables_additional_variable_init_port` value.
 wg_easy_container_wireguard_bind_port: 51820
 ```
 
 > [!WARNING]
 > If you need to change the hostname or port after the initial setup, you need to do so from the Admin Panel -> Config section (`/admin/config` URL path) of the web UI.
-
-💡 Regardless of how and when you configure the "public WireGuard port" (discussed above), the WireGuard port in the container is always `51820/udp` and the exposed port is controlled by the `wg_easy_container_wireguard_bind_port` Ansible variable (defaulting to `51820` as well). You most likely wish to adjust that one to match your "public WireGuard port".
 
 ### Adjusting the default DNS servers
 
@@ -200,7 +200,7 @@ Depending on your configuration, you may need to go through a setup wizard first
 
 If you have provided a username (`wg_easy_environment_variables_additional_variable_init_username`) and password (`wg_easy_environment_variables_additional_variable_init_password`) before the first installation, the unattended setup process would have created these credentials for you, so you can log in with them. Otherwise, you'll see a setup wizard and can create your own credentials.
 
-Similarly, if you have provided a hostname (`wg_easy_hostname` and/or `wg_easy_environment_variables_additional_variable_init_host`) and port (`wg_easy_environment_variables_additional_variable_init_port`) before the first installation, the unattended setup process would have initialized the wg-easy service with these values. Otherwise, you'll see a setup wizard about this. The WireGuard port in the container is always 51820/udp and the exposed port is controlled by `wg_easy_container_wireguard_bind_port` (defaulting to `51820` as well).
+Similarly, if you have provided a hostname (`wg_easy_hostname` and/or `wg_easy_environment_variables_additional_variable_init_host`) and port (`wg_easy_environment_variables_additional_variable_init_port`) before the first installation, the unattended setup process would have initialized the wg-easy service with these values. Otherwise, you'll see a setup wizard about this.
 
 ### Creating WireGuard clients
 
