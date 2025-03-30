@@ -247,6 +247,10 @@
     - role: galaxy/hubsite
     # /role-specific:hubsite
 
+    # role-specific:ihatemoney
+    - role: galaxy/ihatemoney
+    # /role-specific:ihatemoney
+
     # role-specific:ilmo
     - role: galaxy/ilmo
     # /role-specific:ilmo
@@ -422,6 +426,10 @@
     # role-specific:semaphore
     - role: galaxy/semaphore
     # /role-specific:semaphore
+
+    # role-specific:send
+    - role: galaxy/send
+    # /role-specific:send
 
     # role-specific:soft_serve
     - role: galaxy/soft_serve

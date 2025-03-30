@@ -29,7 +29,7 @@
   name: auxiliary
   activation_prefix: aux_
 - src: git+https://github.com/mother-of-all-self-hosting/ansible-role-backup_borg.git
-  version: v1.4.0-1.9.13-0
+  version: v1.4.0-1.9.13-1
   name: backup_borg
   activation_prefix: backup_borg_
 - src: git+https://github.com/lingawakad/ansible-role-calibre-web.git
@@ -164,6 +164,10 @@
   version: v1.27.4-1
   name: hubsite
   activation_prefix: hubsite_
+- src: git+https://github.com/IUCCA/ansible-role-ihatemoney.git
+  version: v6.1.5-7
+  name: ihatemoney
+  activation_prefix: ihatemoney_
 - src: git+https://github.com/moan0s/ansible-role-ilmo.git
   version: v1.0.4-0
   name: ilmo
@@ -181,7 +185,7 @@
   name: jackett
   activation_prefix: jackett_
 - src: git+https://github.com/mother-of-all-self-hosting/ansible-role-jitsi.git
-  version: v10133-0
+  version: v10133-1-0
   name: jitsi
   activation_prefix: jitsi_
 - src: git+https://codeberg.org/acioustick/ansible-role-joplin-server.git
@@ -391,6 +395,10 @@
   version: v2.9.56-0
   name: semaphore
   activation_prefix: semaphore_
+- src: git+https://github.com/mother-of-all-self-hosting/ansible-role-send.git
+  version: v2025.2.4-0
+  name: send
+  activation_prefix: send_
 - src: git+https://github.com/mother-of-all-self-hosting/ansible-role-soft_serve.git
   version: v0.4.7-1
   name: soft_serve
@@ -424,7 +432,7 @@
   name: systemd_service_manager
   activation_prefix: ""
 - src: git+https://github.com/IUCCA/ansible-role-tandoor.git
-  version: v1.5.31-0
+  version: v1.5.34-0
   name: tandoor
   activation_prefix: tandoor_
 - src: git+https://github.com/mother-of-all-self-hosting/ansible-role-telegraf.git
