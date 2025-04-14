@@ -12,6 +12,7 @@ This service requires the following other services:
 - a [Traefik](traefik.md) reverse-proxy server
 - a modern Linux kernel which supports WireGuard
 - `devture_systemd_docker_base_ipv6_enabled: true` if you'd like IPv6 support
+- a server with the `amd64` or `arm64` CPU architecture
 
 
 ## Configuration
