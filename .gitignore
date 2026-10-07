@@ -21,6 +21,7 @@
 !/run/.gitkeep
 
 /var/
+.direnv/
 
 /group_vars/*
 !/group_vars/.gitkeep
