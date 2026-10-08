@@ -1,0 +1,63 @@
+# SPDX-FileCopyrightText: 2026 MASH project contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+---
+- name: Perform Minecraft Server data restoration tasks
+  when:
+    - minecraft_enabled | bool
+    - minecraft_restore_tarball_path | default('') | length > 0
+  tags:
+    - setup-all
+    - setup-minecraft
+    - install-all
+    - install-minecraft
+  block:
+    - name: Check whether Minecraft Server data has already been restored
+      ansible.builtin.stat:
+        path: "{{ minecraft_restore_marker_path }}"
+      register: minecraft_restore_marker_result
+
+    - name: Restore Minecraft Server data from the tarball
+      when: not minecraft_restore_marker_result.stat.exists | bool
+      block:
+        - name: Check whether the Minecraft Server systemd service exists
+          ansible.builtin.stat:
+            path: "{{ devture_systemd_docker_base_systemd_path }}/{{ minecraft_identifier }}.service"
+          register: minecraft_restore_unit_result
+
+        - name: Stop the Minecraft Server service before restoring data
+          when: minecraft_restore_unit_result.stat.exists | bool
+          ansible.builtin.systemd_service:
+            name: "{{ minecraft_identifier }}.service"
+            state: stopped
+
+        - name: Remove the existing Minecraft Server data
+          ansible.builtin.file:
+            path: "{{ minecraft_data_path }}"
+            state: absent
+
+        - name: Ensure the Minecraft Server base path exists
+          ansible.builtin.file:
+            path: "{{ minecraft_base_path }}"
+            state: directory
+            mode: "0750"
+            owner: "{{ minecraft_uid }}"
+            group: "{{ minecraft_gid }}"
+
+        - name: Unpack the Minecraft Server backup tarball
+          ansible.builtin.unarchive:
+            src: "{{ minecraft_restore_tarball_path }}"
+            dest: "{{ minecraft_base_path }}"
+            owner: "{{ minecraft_uid }}"
+            group: "{{ minecraft_gid }}"
+            extra_opts:
+              - --strip-components=1
+
+        - name: Mark the Minecraft Server data as restored
+          ansible.builtin.file:
+            path: "{{ minecraft_restore_marker_path }}"
+            state: touch
+            mode: "0640"
+            owner: "{{ minecraft_uid }}"
+            group: "{{ minecraft_gid }}"

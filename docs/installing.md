@@ -87,6 +87,7 @@ When this command completes, services won't be running yet.
 You can now:
 
 - [Importing an existing Postgres database (from another installation)](services/postgres.md#importing) (optional)
+- [Importing a Minecraft data backup](services/minecraft.md#restoring-from-a-backup) (optional)
 
 … and then proceed to starting all services:
 

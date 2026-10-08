@@ -626,6 +626,12 @@
     - role: galaxy/mermaid
     # /role-specific:mermaid
 
+    # minecraft_restore is a local role (roles/mash/minecraft_restore), so it has no
+    # role-specific markers - optimize.py only knows about roles listed in requirements.yml.
+    # It must run before galaxy/minecraft, so that a backup import lands before the
+    # service's env/labels are (re)generated from the inventory configuration.
+    - role: mash/minecraft_restore
+
     # role-specific:minecraft
     - role: galaxy/minecraft
     # /role-specific:minecraft

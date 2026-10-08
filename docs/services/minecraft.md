@@ -21,3 +21,30 @@ The [Ansible role for Minecraft Server](https://github.com/mother-of-all-self-ho
 
 - 🌐 [the role's documentation](https://github.com/mother-of-all-self-hosting/ansible-role-minecraft/blob/main/docs/configuring-minecraft.md) online
 - 📁 `roles/galaxy/minecraft/docs/configuring-minecraft.md` locally, if you have [fetched the Ansible roles](../installing.md)
+
+## Restoring from a backup
+
+The playbook can import a tarball of the Minecraft Server directory before installing or updating the service:
+
+1. Create the tarball of the `minecraft` base directory (e.g. `/mash/minecraft` by default) on the old server:
+
+   ```sh
+   tar -C /mash -cf minecraft.tar minecraft
+   ```
+
+2. Put the tarball on the machine you run this playbook from (e.g. into `inventory/`, which is ignored by git) and set in your `vars.yml`:
+
+   ```yaml
+   minecraft_restore_tarball_path: "{{ playbook_dir }}/inventory/minecraft.tar"
+   ```
+
+3. Install (or update) Minecraft as usual, e.g. `just install-all`.
+
+The import stops the service (if it is running), replaces `minecraft_data_path` with the tarball contents, fixes ownership and then lets the normal installation regenerate `env` and `labels` from your inventory configuration. Any `minecraft_environment_variables_*` settings you change afterwards are applied by subsequent runs as well.
+
+The import runs only once: it records `/mash/minecraft/.restore-completed` and later playbook runs skip it, even if `minecraft_restore_tarball_path` stays set. Delete that marker file if you want to import the tarball again.
+
+> [!NOTE]
+> The tarball contents are taken as-is. If the backup was not made from a Vanilla server on the latest version (e.g. Paper 1.21.11), set `minecraft_environment_variables_type` and `minecraft_environment_variables_version` accordingly, or the server will start with different settings than the backup had.
+
+Once Minecraft has started with the imported worlds, restart BlueMap (`sudo systemctl restart mash-bluemap.service`) so that it renders them.

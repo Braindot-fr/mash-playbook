@@ -1,0 +1,22 @@
+# SPDX-FileCopyrightText: 2026 MASH project contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+---
+
+# Path (on the machine running this playbook) to a tarball of the Minecraft
+# Server base directory, e.g. created on the old server with:
+#   tar -C /mash -cf minecraft.tar minecraft
+#
+# When set, the tarball is unpacked into `minecraft_base_path` (replacing
+# `minecraft_data_path`) before the Minecraft Server service is installed or
+# updated, so that the service picks up the imported data right away.
+#
+# The import runs only once: afterwards `minecraft_restore_marker_path` exists
+# and further playbook runs only apply configuration changes from your
+# inventory. Delete the marker file to import the tarball again.
+minecraft_restore_tarball_path: ""
+
+# A file that marks the import as completed. Do not place it inside
+# `minecraft_data_path`, which is replaced during an import.
+minecraft_restore_marker_path: "{{ minecraft_base_path }}/.restore-completed"
