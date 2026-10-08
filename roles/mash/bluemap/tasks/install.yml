@@ -1,0 +1,111 @@
+# SPDX-FileCopyrightText: 2026 MASH project contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+---
+- name: Ensure BlueMap paths exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0750"
+    owner: "{{ bluemap_uid }}"
+    group: "{{ bluemap_gid }}"
+  with_items:
+    - "{{ bluemap_base_path }}"
+    - "{{ bluemap_config_path }}"
+    - "{{ bluemap_data_path }}"
+    - "{{ bluemap_web_path }}"
+
+- name: Check which BlueMap world directories exist
+  ansible.builtin.stat:
+    path: "{{ item.path }}"
+  loop: "{{ bluemap_worlds }}"
+  loop_control:
+    label: "{{ item.name }}: {{ item.path }}"
+  register: bluemap_world_paths_stat
+
+- name: Remember which BlueMap worlds can be mounted
+  ansible.builtin.set_fact:
+    bluemap_worlds_existing: "{{ bluemap_world_paths_stat.results | selectattr('stat.isdir', 'defined') | selectattr('stat.isdir') | map(attribute='item') | list }}"
+
+- name: Ensure BlueMap support files installed
+  ansible.builtin.template:
+    src: "{{ role_path }}/templates/{{ item }}.j2"
+    dest: "{{ bluemap_base_path }}/{{ item }}"
+    mode: "0640"
+    owner: "{{ bluemap_uid }}"
+    group: "{{ bluemap_gid }}"
+  with_items:
+    - env
+    - labels
+  register: bluemap_support_files_result
+
+- name: Ensure BlueMap resource download is accepted
+  ansible.builtin.lineinfile:
+    path: "{{ bluemap_config_path }}/core.conf"
+    regexp: '^accept-download\s*:.*$'
+    line: "accept-download: {{ 'true' if bluemap_accept_download | bool else 'false' }}"
+    create: true
+    mode: "0640"
+    owner: "{{ bluemap_uid }}"
+    group: "{{ bluemap_gid }}"
+  register: bluemap_accept_download_result
+
+- name: Ensure BlueMap container image is pulled via community.docker.docker_image_pull
+  when: devture_systemd_docker_base_container_image_pull_method == 'ansible-module'
+  community.docker.docker_image_pull:
+    name: "{{ bluemap_container_image }}"
+    pull: always
+  register: bluemap_container_image_pull_result_ansible_module
+  retries: "{{ devture_playbook_help_container_retries_count }}"
+  delay: "{{ devture_playbook_help_container_retries_delay }}"
+  until: bluemap_container_image_pull_result_ansible_module is not failed
+
+- name: Ensure BlueMap container image is pulled via ansible.builtin.command
+  when: devture_systemd_docker_base_container_image_pull_method == 'command'
+  ansible.builtin.command:
+    cmd: "{{ devture_systemd_docker_base_host_command_docker }} pull {{ bluemap_container_image }}"
+  register: bluemap_container_image_pull_result_command
+  retries: "{{ devture_playbook_help_container_retries_count }}"
+  delay: "{{ devture_playbook_help_container_retries_delay }}"
+  until: bluemap_container_image_pull_result_command is not failed
+  changed_when: "'Downloaded newer image' in bluemap_container_image_pull_result_command.stdout"
+
+- name: Ensure BlueMap container network is created via community.docker.docker_network
+  when: devture_systemd_docker_base_container_network_creation_method == 'ansible-module'
+  community.docker.docker_network:
+    enable_ipv6: "{{ devture_systemd_docker_base_ipv6_enabled }}"
+    name: "{{ bluemap_container_network }}"
+    driver: bridge
+    driver_options: "{{ devture_systemd_docker_base_container_networks_driver_options }}"
+  register: bluemap_network_creation_result
+
+- name: Ensure BlueMap container network is created via ansible.builtin.command
+  when: devture_systemd_docker_base_container_network_creation_method == 'command'
+  ansible.builtin.command:
+    cmd: >-
+      {{ devture_systemd_docker_base_host_command_docker }} network create
+      {% if devture_systemd_docker_base_ipv6_enabled %}--ipv6{% endif %}
+      {{ devture_systemd_docker_base_container_networks_driver_options_string }}
+      {{ bluemap_container_network }}
+  register: bluemap_network_creation_result
+  changed_when: bluemap_network_creation_result.rc == 0
+  failed_when: bluemap_network_creation_result.rc != 0 and 'already exists' not in bluemap_network_creation_result.stderr
+
+- name: Ensure BlueMap systemd service is present
+  ansible.builtin.template:
+    src: "{{ role_path }}/templates/systemd/bluemap.service.j2"
+    dest: "{{ devture_systemd_docker_base_systemd_path }}/{{ bluemap_identifier }}.service"
+    mode: "0644"
+  register: bluemap_systemd_service_result
+
+- name: Determine whether BlueMap needs a restart
+  ansible.builtin.set_fact:
+    bluemap_restart_necessary: >-
+      {{
+        bluemap_support_files_result.changed | default(false)
+        or bluemap_accept_download_result.changed | default(false)
+        or bluemap_systemd_service_result.changed | default(false)
+        or bluemap_container_image_pull_result_ansible_module.changed | default(false)
+        or bluemap_container_image_pull_result_command.changed | default(false)
+      }}

@@ -1,0 +1,77 @@
+{#
+SPDX-FileCopyrightText: 2026 MASH project contributors
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+# ponytail: no --read-only, unlike sibling roles. BlueMap writes outside its
+# mounts (Mojang resource download, debug log), so a read-only root filesystem
+# breaks it. Revisit with --read-only plus extra mounts once that write set is
+# known.
+#}
+
+[Unit]
+Description=BlueMap ({{ bluemap_identifier }})
+{% for service in bluemap_systemd_required_services_list %}
+Requires={{ service }}
+After={{ service }}
+{% endfor %}
+{% for service in bluemap_systemd_wanted_services_list %}
+Wants={{ service }}
+{% endfor %}
+DefaultDependencies=no
+
+[Service]
+Type=simple
+Environment="HOME={{ devture_systemd_docker_base_systemd_unit_home_path }}"
+ExecStartPre={{ devture_systemd_docker_base_host_command_sh }} -c '{{ bluemap_container_cleanup_command | trim | replace("\n", " ") }}'
+
+ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
+      --rm \
+      --name={{ bluemap_identifier }} \
+      --log-driver=none \
+      --user={{ bluemap_uid }}:{{ bluemap_gid }} \
+      --cap-drop=ALL \
+      --network={{ bluemap_container_network }} \
+      {% if bluemap_container_http_host_bind_port %}
+      -p {{ bluemap_container_http_host_bind_port }}:{{ bluemap_container_http_port }} \
+      {% endif %}
+      --env-file={{ bluemap_base_path }}/env \
+      --label-file={{ bluemap_base_path }}/labels \
+      --mount type=bind,src={{ bluemap_config_path }},dst=/app/config \
+      --mount type=bind,src={{ bluemap_data_path }},dst=/app/data \
+      {# BlueMap's `data` folder (Mojang client jar, render progress, logs) stays
+         `bluemap` relative to the working directory whenever core.conf has no
+         `data` key, which is what this role's pre-created core.conf means, and
+         what an already generated webserver.conf's log path points at. Mount
+         the same directory there too, so either spelling stays writable. #}
+      --mount type=bind,src={{ bluemap_data_path }},dst=/app/bluemap \
+      --mount type=bind,src={{ bluemap_web_path }},dst=/app/web \
+      {% for world in bluemap_worlds_existing %}
+      --mount type=bind,src={{ world.path }},dst=/app/{{ world.name }},readonly \
+      {% endfor %}
+      {% for volume in bluemap_container_additional_volumes %}
+      --mount type={{ volume.type | default('bind' if '/' in volume.src else 'volume') }},src={{ volume.src }},dst={{ volume.dst }}{{ (',' + volume.options) if volume.options | default('') else '' }} \
+      {% endfor %}
+      {% for arg in bluemap_container_extra_arguments %}
+      {{ arg }} \
+      {% endfor %}
+      {{ bluemap_container_image }} \
+      {% for arg in bluemap_process_extra_arguments %}
+      {{ arg }} \
+      {% endfor %}
+
+{% for network in bluemap_container_additional_networks %}
+ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} network connect {{ network }} {{ bluemap_identifier }}
+{% endfor %}
+
+ExecStart={{ devture_systemd_docker_base_host_command_docker }} start --attach {{ bluemap_identifier }}
+
+ExecStop=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} stop -t {{ bluemap_container_stop_grace_time_seconds }} {{ bluemap_identifier }} 2>/dev/null || true'
+ExecStop=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} rm {{ bluemap_identifier }} 2>/dev/null || true'
+
+Restart=always
+RestartSec=30
+SyslogIdentifier={{ bluemap_identifier }}
+
+[Install]
+WantedBy=multi-user.target

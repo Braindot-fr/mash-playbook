@@ -50,6 +50,7 @@ Below is an exhaustive list of the free and open-source software for self-hostin
 | [Bichon](https://github.com/rustmailer/bichon) | Email archiving server with full-text search function | [Link](services/bichon.md) |
 | [BIND](https://www.isc.org/bind/) | A full-featured DNS server | [Link](services/bind.md) |
 | [bitmagnet](https://bitmagnet.io/) | BitTorrent indexer, DHT crawler, content classifier and search engine | [Link](services/bitmagnet.md) |
+| [BlueMap](https://bluemap.bluecolored.de/) | 3D map renderer and viewer for Minecraft worlds | [Link](services/bluemap.md) |
 | [BookStack](https://www.bookstackapp.com) | Information organizer and storage | [Link](services/bookstack.md) |
 | [BorgBackup](https://www.borgbackup.org/) (via [borgmatic](https://torsion.org/borgmatic/)) | A deduplicating backup program with optional compression and encryption | [Link](services/backup-borg.md) |
 | [Borg Web UI](https://github.com/karanhudia/borg-ui) | Unofficial web interface for BorgBackup | [Link](services/borg-ui.md) |

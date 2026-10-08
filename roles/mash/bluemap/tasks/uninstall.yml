@@ -1,0 +1,76 @@
+# SPDX-FileCopyrightText: 2026 MASH project contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+---
+- name: Check existence of BlueMap systemd service
+  ansible.builtin.stat:
+    path: "{{ devture_systemd_docker_base_systemd_path }}/{{ bluemap_identifier }}.service"
+  register: bluemap_service_stat
+
+- name: Uninstall BlueMap systemd services and files
+  when: bluemap_service_stat.stat.exists | bool
+  block:
+    - name: Ensure BlueMap systemd service is stopped
+      ansible.builtin.service:
+        name: "{{ bluemap_identifier }}"
+        state: stopped
+        enabled: false
+        daemon_reload: true
+
+    - name: Ensure BlueMap systemd service does not exist
+      ansible.builtin.file:
+        path: "{{ devture_systemd_docker_base_systemd_path }}/{{ bluemap_identifier }}.service"
+        state: absent
+
+    - name: Ensure BlueMap support files do not exist
+      ansible.builtin.file:
+        path: "{{ bluemap_base_path }}/{{ item }}"
+        state: absent
+      with_items:
+        - env
+        - labels
+
+    - name: Ensure BlueMap base path does not exist if empty
+      ansible.builtin.command:
+        cmd: "rmdir {{ bluemap_base_path }}"
+      register: bluemap_base_path_deletion_result
+      changed_when: bluemap_base_path_deletion_result.rc == 0
+      failed_when: false
+
+    - name: Ensure BlueMap container network does not exist
+      when: bluemap_container_network_deletion_enabled
+      block:
+        - name: Ensure BlueMap container network does not exist via community.docker.docker_network
+          when: devture_systemd_docker_base_container_network_creation_method == 'ansible-module'
+          community.docker.docker_network:
+            name: "{{ bluemap_container_network }}"
+            state: absent
+          register: bluemap_network_deletion_result
+
+        - name: Ensure BlueMap container network does not exist via ansible.builtin.command
+          when: devture_systemd_docker_base_container_network_creation_method == 'command'
+          ansible.builtin.command:
+            cmd: >-
+              {{ devture_systemd_docker_base_host_command_docker }} network rm
+              {{ bluemap_container_network }}
+          register: bluemap_network_deletion_result
+          changed_when: bluemap_container_network in bluemap_network_deletion_result.stdout
+
+- name: Check existence of BlueMap base path
+  ansible.builtin.stat:
+    path: "{{ bluemap_base_path }}"
+  register: bluemap_base_path_stat
+
+# We just want to notify the user. Deleting data is too destructive.
+- name: Inject the message about the remaining BlueMap data
+  when: bluemap_base_path_stat.stat.exists | bool
+  ansible.builtin.set_fact:
+    devture_playbook_runtime_messages_list: |
+      {{
+        devture_playbook_runtime_messages_list | default([])
+        +
+        [
+          "Note: As the local BlueMap instance has been removed, some old data remains in `" + bluemap_base_path + "`. Feel free to delete it."
+        ]
+      }}
