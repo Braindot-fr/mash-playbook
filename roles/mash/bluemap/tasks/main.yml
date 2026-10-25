@@ -1,0 +1,26 @@
+# SPDX-FileCopyrightText: 2026 MASH project contributors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+---
+- name: Perform BlueMap installation tasks
+  when: bluemap_enabled | bool
+  tags:
+    - setup-all
+    - setup-bluemap
+    - install-all
+    - install-bluemap
+  block:
+    - name: Validate BlueMap configuration
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/validate_config.yml"
+    - name: Install BlueMap
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/install.yml"
+
+- name: Perform BlueMap uninstallation tasks
+  when: not bluemap_enabled | bool
+  tags:
+    - setup-all
+    - setup-bluemap
+  block:
+    - name: Uninstall BlueMap
+      ansible.builtin.include_tasks: "{{ role_path }}/tasks/uninstall.yml"

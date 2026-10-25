@@ -1,3 +1,13 @@
+# 2026-10-25
+
+## BlueMap is available as a standalone service
+
+BlueMap is a 3D map renderer and viewer for Minecraft worlds. Enable it with `bluemap_enabled: true` and set `bluemap_hostname`. When the Minecraft service is enabled, BlueMap renders its worlds automatically; otherwise list them in `bluemap_worlds_custom`.
+
+BlueMap downloads resources from Mojang, so set `bluemap_accept_download: true` to accept that. Disabling BlueMap keeps its base path and generated data by default. Set `bluemap_force_uninstall_cleanup: true` to also delete the rendered maps and web assets; the configuration is never deleted automatically.
+
+See [the BlueMap documentation](docs/services/bluemap.md).
+
 # 2026-10-20
 
 ## FMD Server 0.17: back up before upgrading
