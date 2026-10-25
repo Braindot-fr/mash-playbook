@@ -174,6 +174,10 @@
     - role: galaxy/bichon
     # /role-specific:bichon
 
+    # bluemap is a local role (roles/mash/bluemap), so it has no role-specific
+    # markers - optimize.py only knows about roles listed in requirements.yml.
+    - role: mash/bluemap
+
     # role-specific:bind
     - role: galaxy/bind
     # /role-specific:bind

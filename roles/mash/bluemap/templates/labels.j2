@@ -1,0 +1,51 @@
+{#
+SPDX-FileCopyrightText: 2026 MASH project contributors
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+#}
+
+{% if bluemap_container_labels_traefik_enabled %}
+traefik.enable=true
+
+{% if bluemap_container_labels_traefik_docker_network %}
+traefik.docker.network={{ bluemap_container_labels_traefik_docker_network }}
+{% endif %}
+
+{% set middlewares = [] %}
+
+{% if bluemap_container_labels_traefik_middleware_basic_auth_enabled %}
+{% set middlewares = middlewares + [bluemap_identifier + '-basic-auth'] %}
+traefik.http.middlewares.{{ bluemap_identifier }}-basic-auth.basicauth.users={{ bluemap_container_labels_traefik_middleware_basic_auth_users }}
+{% endif %}
+
+{% if bluemap_container_labels_traefik_path_prefix != '/' %}
+traefik.http.middlewares.{{ bluemap_identifier }}-slashless-redirect.redirectregex.regex=^({{ bluemap_container_labels_traefik_path_prefix | quote }})$
+traefik.http.middlewares.{{ bluemap_identifier }}-slashless-redirect.redirectregex.replacement=${1}/
+{% set middlewares = middlewares + [bluemap_identifier + '-slashless-redirect'] %}
+{% endif %}
+
+{% if bluemap_container_labels_traefik_path_prefix != '/' %}
+traefik.http.middlewares.{{ bluemap_identifier }}-strip-prefix.stripprefix.prefixes={{ bluemap_container_labels_traefik_path_prefix }}
+{% set middlewares = middlewares + [bluemap_identifier + '-strip-prefix'] %}
+{% endif %}
+
+traefik.http.routers.{{ bluemap_identifier }}.rule={{ bluemap_container_labels_traefik_rule }}
+{% if bluemap_container_labels_traefik_priority | int > 0 %}
+traefik.http.routers.{{ bluemap_identifier }}.priority={{ bluemap_container_labels_traefik_priority }}
+{% endif %}
+traefik.http.routers.{{ bluemap_identifier }}.service={{ bluemap_identifier }}
+{% if middlewares | length > 0 %}
+traefik.http.routers.{{ bluemap_identifier }}.middlewares={{ middlewares | join(',') }}
+{% endif %}
+traefik.http.routers.{{ bluemap_identifier }}.entrypoints={{ bluemap_container_labels_traefik_entrypoints }}
+traefik.http.routers.{{ bluemap_identifier }}.tls={{ bluemap_container_labels_traefik_tls | to_json }}
+{% if bluemap_container_labels_traefik_tls %}
+traefik.http.routers.{{ bluemap_identifier }}.tls.certResolver={{ bluemap_container_labels_traefik_tls_certResolver }}
+{% endif %}
+
+traefik.http.services.{{ bluemap_identifier }}.loadbalancer.server.port={{ bluemap_container_http_port }}
+{% endif %}
+
+{% for arg in bluemap_container_labels_additional_labels %}
+{{ arg }}
+{% endfor %}

@@ -245,6 +245,11 @@ mash_playbook_devture_systemd_service_manager_services_list_auto_itemized:
     {{ ({'name': (bitmagnet_identifier + '.service'), 'priority': 2000, 'restart_necessary': (bitmagnet_restart_necessary | bool), 'groups': ['mash', 'bitmagnet']} if bitmagnet_enabled else omit) }}
   # /role-specific:bitmagnet
 
+  # bluemap is a local role (roles/mash/bluemap), so it has no role-specific
+  # markers - optimize.py only knows about roles listed in requirements.yml.
+  - |-
+    {{ ({'name': (bluemap_identifier + '.service'), 'priority': 2000, 'restart_necessary': (bluemap_restart_necessary | bool), 'groups': ['mash', 'bluemap']} if bluemap_enabled else omit) }}
+
   # role-specific:bookstack
   - |-
     {{ ({'name': (bookstack_identifier + '.service'), 'priority': 2000, 'restart_necessary': (bookstack_restart_necessary | bool), 'groups': ['mash', 'bookstack']} if bookstack_enabled else omit) }}
@@ -4245,6 +4250,51 @@ bitmagnet_container_labels_traefik_tls_certResolver: "{{ traefik_certResolver_pr
 #                                                                      #
 ########################################################################
 # /role-specific:bitmagnet
+
+
+
+########################################################################
+#                                                                      #
+# bluemap                                                              #
+#                                                                      #
+########################################################################
+
+bluemap_enabled: false
+
+bluemap_identifier: "{{ mash_playbook_service_identifier_prefix }}bluemap"
+
+bluemap_base_path: "{{ mash_playbook_base_path }}/{{ mash_playbook_service_base_directory_name_prefix }}bluemap"
+
+bluemap_uid: "{{ mash_playbook_uid }}"
+bluemap_gid: "{{ mash_playbook_gid }}"
+
+bluemap_worlds_auto: |
+  {{
+    (
+      [{'name': 'world', 'path': minecraft_data_path ~ '/world'}]
+      + [{'name': 'world_nether', 'path': minecraft_data_path ~ '/world_nether'}]
+      + [{'name': 'world_the_end', 'path': minecraft_data_path ~ '/world_the_end'}]
+    ) if minecraft_enabled | default(false) else []
+  }}
+
+bluemap_container_additional_networks_auto: |
+  {{
+    ([mash_playbook_reverse_proxyable_services_additional_network] if mash_playbook_reverse_proxyable_services_additional_network else [])
+  }}
+
+bluemap_container_labels_traefik_enabled: "{{ mash_playbook_traefik_labels_enabled }}"
+bluemap_container_labels_traefik_docker_network: "{{ mash_playbook_reverse_proxyable_services_additional_network }}"
+
+# role-specific:traefik
+bluemap_container_labels_traefik_entrypoints: "{{ traefik_entrypoint_primary }}"
+bluemap_container_labels_traefik_tls_certResolver: "{{ traefik_certResolver_primary }}"
+# /role-specific:traefik
+
+########################################################################
+#                                                                      #
+# /bluemap                                                             #
+#                                                                      #
+########################################################################
 
 
 
