@@ -10,12 +10,15 @@ path = [
     ".ansible-lint",
     ".codespellrc",
     ".editorconfig",
+    ".envrc",
     ".github/renovate.json",
     ".gitignore",
     ".pre-commit-config.yaml",
     ".yamllint",
     "VERSIONS.md",
     "ansible.cfg",
+    "flake.lock",
+    "flake.nix",
     "releases.opml",
     "templates/requirements.yml"
 ]
